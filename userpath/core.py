@@ -7,9 +7,19 @@ def prepend(location, app_name=None, shells=None, all_shells=False, home=None, c
     return interface.put(location, front=True, app_name=app_name, check=check)
 
 
+def prepend_and_report(location, app_name=None, shells=None, all_shells=False, home=None, check=False):
+    interface = Interface(shells=shells, all_shells=all_shells, home=home)
+    return interface.put_and_report(location, front=True, app_name=app_name, check=check)
+
+
 def append(location, app_name=None, shells=None, all_shells=False, home=None, check=False):
     interface = Interface(shells=shells, all_shells=all_shells, home=home)
     return interface.put(location, front=False, app_name=app_name, check=check)
+
+
+def append_and_report(location, app_name=None, shells=None, all_shells=False, home=None, check=False):
+    interface = Interface(shells=shells, all_shells=all_shells, home=home)
+    return interface.put_and_report(location, front=False, app_name=app_name, check=check)
 
 
 def in_new_path(location, shells=None, all_shells=False, home=None, check=False):

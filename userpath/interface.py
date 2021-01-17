@@ -37,14 +37,22 @@ class WindowsInterface:
         else:
             return True
 
-    def put(self, location, front=True, check=False, **kwargs):
+    def put_and_report(self, location, front=True, check=False, **kwargs):
         location = normpath(location)
+        files_modified = []
+        registry_modified = False
 
         head, tail = (location, self._get_new_path()) if front else (self._get_new_path(), location)
         new_path = '{}{}{}'.format(head, os.pathsep, tail)
 
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Environment', 0, winreg.KEY_WRITE) as key:
             winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, new_path)
+        registry_modified = True
+
+        return files_modified, registry_modified
+
+    def put(self, location, front=True, app_name=None, check=False):
+        _, _ = self.put_and_report(location, front, app_name, check)
 
         return self.location_in_new_path(location, check=check)
 
@@ -112,9 +120,11 @@ class UnixInterface:
         else:
             return True
 
-    def put(self, location, front=True, app_name=None, check=False):
+    def put_and_report(self, location, front=True, app_name=None, check=False):
         location = normpath(location)
         app_name = app_name or 'userpath'
+        files_modified = []
+        registry_modified = False
 
         for shell in self.shells:
             for file, contents in shell.config(location, front=front).items():
@@ -139,8 +149,15 @@ class UnixInterface:
 
                     with open(file, 'w', encoding='utf-8') as f:
                         f.writelines(lines)
+                    files_modified.append(file)
                 except Exception:
                     continue
+
+        return files_modified, registry_modified
+
+
+    def put(self, location, front=True, app_name=None, check=False):
+        _, _ = self.put_and_report(location, front, app_name, check)
 
         return self.location_in_new_path(location, check=check)
 
